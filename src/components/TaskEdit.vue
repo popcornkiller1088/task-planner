@@ -1,10 +1,10 @@
 <template>
 <v-card>
-  <v-card-title>Edit Tasks </v-card-title>
+  <v-card-title> {{ mode === 'new' ? 'New Task' : 'Edit Task' }} </v-card-title>
   <v-card-text>
-    <v-form>
-      <v-text-field v-model="taskDetails.title" label="Title" prepend-icon="mdi-format-title"></v-text-field>
-      <v-text-field v-model="taskDetails.description" label="Description" prepend-icon="mdi-text"></v-text-field>
+    <v-form ref="form" v-model="valid" >
+      <v-text-field v-model="taskDetails.title" label="Title" prepend-icon="mdi-format-title" :rules="[rules.required]"></v-text-field>
+      <v-text-field v-model="taskDetails.description" label="Description" prepend-icon="mdi-text" :rules="[rules.required]"></v-text-field>
 
       <v-menu
         ref="menu"
@@ -25,6 +25,7 @@
             readonly
             v-bind="attrs"
             v-on="on"
+            :rules="[rules.required]"
           ></v-text-field>
         </template>
         <v-time-picker
@@ -35,7 +36,7 @@
         ></v-time-picker>
       </v-menu>
 
-      <v-select :items="['PENDING', 'PROCESSING', 'DONE']" label="Status" v-model="taskDetails.status" prepend-icon="mdi-list-status">
+      <v-select :items="['PENDING', 'PROCESSING', 'DONE']" label="Status" v-model="taskDetails.status" prepend-icon="mdi-list-status" :rules="[rules.required]">
         <template v-slot:item="{ item, attrs, on }">
           <v-list-item v-bind="attrs"  v-on="on" >
             <v-list-item-title
@@ -63,13 +64,15 @@
         @change="fileInputChange"
       ></v-file-input>
 
-      <div class="attachment-amount">total attachments: {{ attachmentList.length }}</div>
-      <div class="attachment-wrapper" v-if="attachmentList.length">
-        <div class="attachment-thumb" v-for="(attachment,i) in attachmentList" :key="i" aria-label="asdasd">
-           <span> {{ i + 1 }}.) {{ attachment.name }}</span>
-           <div class="attachment-delete" @click="removeAttachment(i)"> <v-icon color="red">mdi-delete</v-icon></div>
+      <template v-if="taskDetails.attachmentList">
+        <div class="attachment-amount">total attachments: {{ taskDetails.attachmentList.length }}</div>
+        <div class="attachment-wrapper">
+          <div class="attachment-thumb" v-for="(attachment,i) in taskDetails.attachmentList" :key="i" aria-label="asdasd">
+            <span> {{ attachment.name }}</span>
+            <div class="attachment-delete" @click="removeAttachment(i)"> <v-icon color="red">mdi-delete</v-icon></div>
+          </div>
         </div>
-      </div>
+      </template>
     </v-form>
   </v-card-text>
 
@@ -86,39 +89,65 @@ import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   name: 'TaskCard',
-  props: ['id'],
+  props: ['id', 'mode'],
   data: () => ({
+    valid: false,
+    rules: {
+      required: value => !!value || 'Required.',
+    },
     labelItems: ['Programming', 'Design', 'Vue', 'Vuetify'],
     taskDetails: {},
     time: null,
-    timeMenu: false,
-    attachmentList: []
+    timeMenu: false
   }),
   methods: {
-    ...mapMutations(['updateTaskById']),
+    ...mapMutations(['updateTaskById', 'addTask']),
     fileInputChange(event) {
-      this.attachmentList.push(event);
-    },
-    createObjectUrl(file) {
-      return URL.createObjectURL(file);
+      this.taskDetails.attachmentList.push(event);
     },
     removeAttachment(index) {
-      this.attachmentList.splice(index, 1);
+      this.taskDetails.attachmentList.splice(index, 1);
     },
     submit() {
-      this.updateTaskById(this.taskDetails);
-      this.$emit('close');
+      this.$refs.form.validate();
+      if (this.valid) {
+        if (this.mode === 'new') {
+          this.addTask(this.taskDetails);
+          this.$emit('close');
+        } else {
+          this.updateTaskById(this.taskDetails);
+          this.$emit('close');
+        }
+      }
+    },
+    loadPresets() {
+      if (this.mode !== 'new') {
+        this.$refs.form.resetValidation();
+        this.taskDetails = { ...this.getTaskById(this.id) };
+      } else {
+        this.taskDetails = {
+          id: this.id,
+          title: '',
+          description: '',
+          estimatedTime: '',
+          labels: [],
+          status: [],
+          order: 99,
+          attachmentList: []
+        };
+        this.$refs.form.resetValidation();
+      }
     }
   },
   computed: {
     ...mapGetters(['getTaskById']),
   },
   mounted() {
-    this.taskDetails = { ...this.getTaskById(this.id) };
+    this.loadPresets();
   },
   watch: {
-    id(newVal) {
-      this.taskDetails = { ...this.getTaskById(newVal) };
+    id() {
+      this.loadPresets();
     }
   }
 };
@@ -150,9 +179,8 @@ export default {
 
   .attachment-delete
     cursor: pointer
-    top: 0
-    right: 0
-    width: 20px
+    width: 30px
+    text-align: right
 
 .v-card__actions
   justify-content: space-around

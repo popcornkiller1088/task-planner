@@ -8,17 +8,22 @@
     </v-progress-linear>
   </div>
 
+  <div class="panel my-6 pl-3 pr-4 d-flex">
+    <v-btn class="mt-3 mr-4" @click="newTask"><v-icon class="pr-2">mdi-folder-plus</v-icon>Add Task</v-btn>
+    <v-autocomplete label="search"></v-autocomplete>
+  </div>
+
   <div class="board-wrapper">
     <v-row>
       <v-col cols="12" md="4" v-for="(status, index) in boards" :key="index">
         <v-card class="board">
-          <h3 class="board-title text-center">{{ status }} {{getTaskByStatus(status).length}}/{{ getTotalTaskLength()}} ({{ getCompletePecent() | percentage}})</h3>
+          <h3 class="board-title text-center pb-3">{{ status }} {{getTaskByStatus(status).length}}/{{ getTotalTaskLength()}} ({{ getCompletePecent() | percentage}})</h3>
           <div class="task-wrapper" @dragover.prevent @drop.prevent="drop($event, status)">
             <div class="task-wrapper-inner" v-for="(task) in getTaskByStatus(status)" :key="task.id" draggable="true"
                 @dragstart="dragStart($event, task.id)"
                 @drop.stop.prevent="taskDrop($event, task.id)"
-                @click="previewTask = task.id;
-                dialog = true">
+                @click="previewTask = task.id; editMode = 'edit'; dialog = true; "
+              >
                 <TaskCard :task="task"></TaskCard>
             </div>
           </div>
@@ -30,7 +35,7 @@
   <!-- DIALOG -->
   <div class="text-center">
     <v-dialog v-model="dialog" width="500" scrollable>
-      <TaskEdit :id="previewTask" @close="dialog = false"></TaskEdit>
+      <TaskEdit :id="previewTask" @close="dialog = false" :mode="editMode"></TaskEdit>
     </v-dialog>
   </div>
 
@@ -52,6 +57,7 @@ export default {
       dialog: false,
       dragPreview: '',
       previewTask: 3,
+      editMode: 'new',
       boards: ['PENDING', 'PROCESSING', 'DONE']
     };
   },
@@ -72,6 +78,12 @@ export default {
 
     getCompletePecent() {
       return this.getTaskByStatus('DONE').length / this.getTotalTaskLength();
+    },
+
+    newTask() {
+      this.previewTask = new Date().getTime();
+      this.editMode = 'new';
+      this.dialog = true;
     }
   },
   computed: {
@@ -83,27 +95,21 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-p
-  font-size: 2em
-  text-align: center
-
 .header
   background: #ebecf0
   padding: 0 10px 10px
   border-radius: 5px
 
+.panel
+  background: #ebecf0
+  border-radius: 5px
+
 .task-wrapper
   min-height: 200px
-
-.board-wrapper
-  margin-top: 20px
 
 .board.v-card
   background: #ebecf0
   padding: 10px 10px 20px 10px
-
-.board-title
-  padding-bottom: 10px
 
 .task-wrapper-inner
   & + &

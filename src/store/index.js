@@ -14,7 +14,7 @@ export default new Vuex.Store({
         labels: ['Programming'],
         status: 'PENDING',
         order: 0,
-        attachments: []
+        attachmentList: []
       },
       {
         id: 2,
@@ -24,7 +24,7 @@ export default new Vuex.Store({
         labels: ['Programming'],
         status: 'PENDING',
         order: 1,
-        attachments: []
+        attachmentList: []
       },
       {
         id: 3,
@@ -34,7 +34,7 @@ export default new Vuex.Store({
         labels: ['Programming'],
         status: 'PENDING',
         order: 2,
-        attachments: []
+        attachmentList: []
       },
       {
         id: 4,
@@ -44,7 +44,7 @@ export default new Vuex.Store({
         labels: ['Programming'],
         status: 'PENDING',
         order: 3,
-        attachments: []
+        attachmentList: []
       }
     ],
   },
@@ -85,11 +85,13 @@ export default new Vuex.Store({
     },
 
     updateTaskById(state, payload) {
-      console.log(payload);
       // eslint-disable-next-line
       let target = state.task.find((task) => task.id === parseInt(payload.id, 0));
-      console.log(target);
       Object.assign(target, payload);
+    },
+
+    addTask(state, payload) {
+      state.task.push(payload);
     }
   },
   actions: {
