@@ -119,6 +119,10 @@ export default new Vuex.Store({
       let target = state.task.find((task) => task.id === parseInt(payload.id, 0));
       target.comments.push(payload.comments);
     },
+
+    addTask(state, payload) {
+      state.task.push(payload);
+    }
   },
   actions: {
   },
