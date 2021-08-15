@@ -113,7 +113,6 @@ export default {
     ...mapGetters(['getTaskByStatus', 'getTotalTaskLength', 'searchTask', 'checkIfTaskExist'])
   },
   mounted() {
-    console.log(this.checkIfTaskExist(this.$route.params.taskId));
     if (this.$route.params.taskId && this.checkIfTaskExist(this.$route.params.taskId)) {
       this.openCard(this.$route.params.taskId);
     }
@@ -143,11 +142,15 @@ export default {
 .board.v-card
   background: #ebecf0
   padding: 10px 10px 20px 10px
+  cursor: pointer
 
 .board-title
   user-select: none
 
 .task-wrapper-inner
+  .v-card:hover
+    background: #d8d2d2
+
   & + &
     margin-top: 10px
 </style>

@@ -46,7 +46,18 @@ export default new Vuex.Store({
         description: 'we denounce with righteous indignation and dislike men who are so begu',
         estimatedTime: '02:15',
         labels: ['Programming'],
-        status: 'PENDING',
+        status: 'PROCESSING',
+        order: 3,
+        attachmentList: [],
+        comments: ['this is urgent']
+      },
+      {
+        id: 5,
+        title: 'Lorem Ipsum',
+        description: 'it. Sed eu justo sed odio accumsan aliquam mattis sed libero. Sed',
+        estimatedTime: '02:15',
+        labels: ['Programming'],
+        status: 'DONE',
         order: 3,
         attachmentList: [],
         comments: ['this is urgent']
