@@ -126,7 +126,7 @@ export default new Vuex.Store({
   },
   getters: {
     getTaskByStatus: (state) => (status) => state.task.filter((task) => task.status === status).sort((a, b) => a.order - b.order),
-    getTaskById: (state) => (id) => state.task.find((task) => task.id === id),
+    getTaskById: (state) => (id) => state.task.find((task) => task.id === parseInt(id, 0)),
     getTotalTaskLength: (state) => () => state.task.length,
     searchTask: (state) => (input) => searchTask(input, state.task),
     checkIfTaskExist: (state) => (id) => state.task.find((task) => task.id === parseInt(id, 0))
