@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import searchTask from '@/utils/searchTask';
 
 Vue.use(Vuex);
 
@@ -8,43 +9,47 @@ export default new Vuex.Store({
     task: [
       {
         id: 1,
-        title: '1111111',
-        description: 'asdasd',
+        title: 'The standard Lorem Ipsum passage',
+        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
         estimatedTime: '02:15',
         labels: ['Programming'],
         status: 'PENDING',
         order: 0,
-        attachmentList: []
+        attachmentList: [],
+        comments: []
       },
       {
         id: 2,
-        title: '22222',
-        description: 'asdasd',
+        title: 'Finibus Bonorum',
+        description: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab',
         estimatedTime: '02:15',
         labels: ['Programming'],
         status: 'PENDING',
         order: 1,
-        attachmentList: []
+        attachmentList: [],
+        comments: []
       },
       {
         id: 3,
-        title: '333333',
-        description: 'asdasd',
+        title: 'Section 1.10.33 of "de Finibus',
+        description: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas',
         estimatedTime: '02:15',
         labels: ['Programming'],
         status: 'PENDING',
         order: 2,
-        attachmentList: []
+        attachmentList: [],
+        comments: []
       },
       {
         id: 4,
-        title: '444444',
-        description: 'asdasd',
+        title: 'On the other hand',
+        description: 'we denounce with righteous indignation and dislike men who are so begu',
         estimatedTime: '02:15',
         labels: ['Programming'],
         status: 'PENDING',
         order: 3,
-        attachmentList: []
+        attachmentList: [],
+        comments: ['this is urgent']
       }
     ],
   },
@@ -90,9 +95,19 @@ export default new Vuex.Store({
       Object.assign(target, payload);
     },
 
-    addTask(state, payload) {
-      state.task.push(payload);
-    }
+    removeTaskById(state, payload) {
+      state.task.forEach((task, index) => {
+        if (task.id === parseInt(payload.id, 0)) {
+          state.task.splice(index, 1);
+        }
+      });
+    },
+
+    addComment(state, payload) {
+      // eslint-disable-next-line
+      let target = state.task.find((task) => task.id === parseInt(payload.id, 0));
+      target.comments.push(payload.comments);
+    },
   },
   actions: {
   },
@@ -101,6 +116,8 @@ export default new Vuex.Store({
   getters: {
     getTaskByStatus: (state) => (status) => state.task.filter((task) => task.status === status).sort((a, b) => a.order - b.order),
     getTaskById: (state) => (id) => state.task.find((task) => task.id === id),
-    getTotalTaskLength: (state) => () => state.task.length
+    getTotalTaskLength: (state) => () => state.task.length,
+    searchTask: (state) => (input) => searchTask(input, state.task),
+    checkIfTaskExist: (state) => (id) => state.task.find((task) => task.id === parseInt(id, 0))
   }
 });

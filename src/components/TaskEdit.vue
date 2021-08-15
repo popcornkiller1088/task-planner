@@ -3,8 +3,8 @@
   <v-card-title> {{ mode === 'new' ? 'New Task' : 'Edit Task' }} </v-card-title>
   <v-card-text>
     <v-form ref="form" v-model="valid" >
-      <v-text-field v-model="taskDetails.title" label="Title" prepend-icon="mdi-format-title" :rules="[rules.required]"></v-text-field>
-      <v-text-field v-model="taskDetails.description" label="Description" prepend-icon="mdi-text" :rules="[rules.required]"></v-text-field>
+      <v-text-field v-model="taskDetails.title" label="Title" prepend-icon="mdi-format-title" :rules="[rules.required]" ></v-text-field>
+      <v-textarea v-model="taskDetails.description" label="Description" prepend-icon="mdi-text" :rules="[rules.required]" rows="2" auto-grow></v-textarea>
 
       <v-menu
         ref="menu"
@@ -33,6 +33,7 @@
           v-model="taskDetails.estimatedTime"
           full-width
           @click:minute="$refs.menu.save(taskDetails.estimatedTime)"
+          format="24hr"
         ></v-time-picker>
       </v-menu>
 
@@ -62,10 +63,13 @@
         label="Attachments"
         :clearable="false"
         @change="fileInputChange"
+        truncate-length="40"
+        hide-input
+        ref="fileInput"
       ></v-file-input>
 
       <template v-if="taskDetails.attachmentList">
-        <div class="attachment-amount">total attachments: {{ taskDetails.attachmentList.length }}</div>
+        <div class="attachment-amount" @click="$refs.fileInput.$refs.input.click()()">total attachments: {{ taskDetails.attachmentList.length }}</div>
         <div class="attachment-wrapper">
           <div class="attachment-thumb" v-for="(attachment,i) in taskDetails.attachmentList" :key="i" aria-label="asdasd">
             <span> {{ attachment.name }}</span>
@@ -74,10 +78,28 @@
         </div>
       </template>
     </v-form>
+
+    <h4 class="pt-2">Comments:</h4>
+
+    <div class="comment-new d-flex pt-4 align-center"  v-for="(comment, i) in taskDetails.comments" :key="i">
+      <v-avatar color="indigo" size="40">
+        <span class="white--text text-h6">KC</span>
+      </v-avatar>
+      <div class="pl-2"> {{ comment }} </div>
+    </div>
+
+    <div class="comment-new d-flex pt-4">
+      <v-avatar color="indigo" size="40">
+        <span class="white--text text-h6">KC</span>
+      </v-avatar>
+      <v-textarea class="ml-2" rows="2" label="leave a comment" v-model="comment" @keyup.enter.prevent="addComment()" outlined auto-grow></v-textarea>
+    </div>
+
   </v-card-text>
 
   <v-card-actions>
     <v-btn depressed color="error" @click="$emit('close')">Cancel</v-btn>
+    <v-btn depressed color="error" @click="remove" v-if="mode === 'edit'">delete</v-btn>
     <v-btn depressed color="error" @click="submit">save</v-btn>
   </v-card-actions>
 
@@ -98,10 +120,11 @@ export default {
     labelItems: ['Programming', 'Design', 'Vue', 'Vuetify'],
     taskDetails: {},
     time: null,
-    timeMenu: false
+    timeMenu: false,
+    comment: ''
   }),
   methods: {
-    ...mapMutations(['updateTaskById', 'addTask']),
+    ...mapMutations(['updateTaskById', 'addTask', 'removeTaskById', 'addComment']),
     fileInputChange(event) {
       this.taskDetails.attachmentList.push(event);
     },
@@ -131,16 +154,26 @@ export default {
           description: '',
           estimatedTime: '',
           labels: [],
-          status: [],
+          status: '',
           order: 99,
-          attachmentList: []
+          attachmentList: [],
+          comments: []
         };
         this.$refs.form.resetValidation();
       }
+    },
+    remove() {
+      this.removeTaskById(this.taskDetails);
+      this.$emit('close');
+    },
+    addComment() {
+      this.taskDetails.comments.push(this.comment);
+      // this.addComment({ id: this.id, comments: this.comment });
+      this.comment = '';
     }
   },
   computed: {
-    ...mapGetters(['getTaskById']),
+    ...mapGetters(['getTaskById', 'search']),
   },
   mounted() {
     this.loadPresets();
@@ -155,7 +188,7 @@ export default {
 
 <style lang="sass" scoped>
 .attachment-amount
-  margin: -20px 0 10px 33px
+  margin: -25px 0 10px 33px
 
 .attachment-wrapper
   display: grid
