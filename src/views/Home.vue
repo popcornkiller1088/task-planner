@@ -116,6 +116,9 @@ export default {
     if (this.$route.params.taskId && this.checkIfTaskExist(this.$route.params.taskId)) {
       this.openCard(this.$route.params.taskId);
     }
+    if (this.$route.query.taskId && this.checkIfTaskExist(this.$route.query.taskId)) {
+      this.openCard(this.$route.query.taskId);
+    }
   },
   watch: {
     selectedBoard(task) {
